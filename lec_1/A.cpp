@@ -52,5 +52,6 @@ int main(){
         cout<< pairInL[i]+1 << " " << i+1 << endl;
     }
     }
+    
     return 0;
 }
