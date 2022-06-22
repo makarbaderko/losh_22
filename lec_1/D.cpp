@@ -4,6 +4,26 @@
 
 using namespace std;
 
+vector<int>pairInL;
+vector<int>used;
+vector<vector<int> > gr;
+
+bool dfs(int v){
+    if(used[v]){
+        return false;
+    };
+    used[v] = true;
+    for(int i = 0; i<gr[v].size(); i++){
+        int unt = gr[v][i];
+        if(pairInL[unt] == -1 or dfs(pairInL[unt])){
+            pairInL[unt] = v;
+            return true;
+        }
+    }
+    return false;
+}
+
+
 int main(){
     int k;
     cin >> k;
@@ -23,6 +43,8 @@ int main(){
             }
             gr[i] = vec;
         }
+
+        f
         
     }
 }

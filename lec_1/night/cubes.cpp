@@ -12,7 +12,7 @@ bool dfs(int v){
         return false;
     };
     used[v] = true;
-    for(int i = 0; i < gr[v].size(); i++){
+    for(int i = 0; i<gr[v].size(); i++){
         int unt = gr[v][i];
         if(pairInL[unt] == -1 or dfs(pairInL[unt])){
             pairInL[unt] = v;
@@ -35,11 +35,13 @@ int main() {
         cin >> cube;
         cubes.push_back(cube);
     }
-    pairInL.assign(n, -1);
+    pairInL.assign(name.size(), -1);
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            if (strstr(name.c_str(), cubes[i].c_str())) {
-                gr[i].push_back(j);
+            for (int k = 0; k < 6; k++) {
+                if (name[i] == cubes[j][k]) {
+                    gr[j].push_back(i);
+                }
             }
         }
     }
@@ -47,22 +49,20 @@ int main() {
         used.assign(n, false);
         dfs(i);
     }
-    int ans = 0;   
+    int ans = 0;
     for(int i = 0; i < n; i++){
         if(pairInL[i] != -1) {
             ans++;
         }
     }
-    cout << ans << endl;
-    if (ans == n) {
+    if (ans == name.length()) {
         cout << "YES" << endl;
         for(int i = 0; i < n; i++){
             if(pairInL[i] != -1){
-                cout<< pairInL[i]+1 << " " << i+1 << endl;
+                cout << pairInL[i] + 1 << " ";
             }
         }
     } else {
         cout << "NO" << endl;
     }
-
 }
