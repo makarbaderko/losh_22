@@ -1,5 +1,4 @@
 #include <vector>
-
 using namespace std;
 
 struct Node {
@@ -10,8 +9,19 @@ struct Node {
     int min; // минимум поддерева этйо вершины
 };
 
-Node nodes[];
+Node nodes[100000];
 int nodesNumber;
+
+int getRand() {
+  return (rand() << 15) + rand();
+}
+int getSz(int v) {return (v >= 0) ? nodes[v].sz : 0;}
+
+void recalculate(int v) {
+    nodes[v].sz = getSz(nodes[v].left) + 1 + getSz(nodes[v].right);
+    nodes[v].min = (nodes[v].left < 0) ? nodes[v].key : nodes[nodes[v].left].min;
+}
+
 
 bool exists(int root, int x) {
     int v = root;
@@ -21,29 +31,33 @@ bool exists(int root, int x) {
         }
         if (nodes[v].key > x) {
             //Едем налево
-            v = nodes[v].left();
+            v = nodes[v].left;
         } else {
-            v = nodes[v].right();
+            v = nodes[v].right;
         }
     }
     return false;
 }
 
 int makeNewNode(int x) {
-    nodes[nodesNumber++] = Node{x, getRand(), -1, -1, 1, x};
+    nodes[nodesNumber++] = Node(x, getRand(), -1, -1, 1, x);
     return nodesNumber++;
 }
 
 pair<int, int> SPLIT(int root, int x) {
     if (root == -1) {
-        return {-1; -1};
+        return make_pair(-1, -1);
     } if (nodes[root].key < x) {
         pair<int, int>p = SPLIT(nodes[root].right, x);
         nodes[root].right = p.first;
         recalculate(root);
-        return {root, p.second};
+        return make_pair(root, p.second);
     } else {
         //Самостоятельное написание
+        pair<int, int>p = SPLIT(nodes[root].right , x);
+        nodes[root].right = p.first;
+        recalculate(root);
+        return make_pair(root, p.second);
     }
 }
 
@@ -56,10 +70,13 @@ int MERGE(int root1, int root2) {
     } if (nodes[root1].pr < nodes[root2].pr) {
         //Root1 будет новым корнем, Т.к. его приоритет меньше чем приоритет корня root2
         nodes[root1].right = MERGE(nodes[root1].right, root2);
-        recalculate(root1)
-        return root1
+        recalculate(root1);
+        return root1;
     } else {
-        //Самостоятельное написание
+        //Самостоятельное написание ++
+        nodes[root2].left = MERGE(nodes[root2].left, root1);
+        recalculate(root2);
+        return root2;
     }
 }
 
@@ -72,15 +89,7 @@ int insert(int root, int x) {
 }
 
 int erase(int root, int x) {
-    pair<int, int>p = SPLIT(root, x);
-    pair<int, int>pp = MERGE(p.first, x-1);
+    pair<int, int> p = SPLIT(root, x);
+    pair<int, int> pp = MERGE(p.first, x-1);
     return MERGE(p.first, p.second);
 }
-
-
-void recalculate(int v) {
-    nodes[v].sz = getSz(nodes[v].left) + 1 + getSz(nodes[v].right);
-    nodes[v].min = (nodes[v].left < 0) ? nodes[v].key : nodes[nodes[v].left].min;
-}
-
-int getSz(int v) {return (v >= 0) ? nodes[v].sz : 0;}
