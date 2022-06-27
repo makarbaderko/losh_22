@@ -1,4 +1,9 @@
 #include <vector>
+#include<iostream>
+#include<string>
+#include <algorithm>
+#include<set>
+#include<random>
 using namespace std;
 
 struct Node {
@@ -9,18 +14,8 @@ struct Node {
     int min; // минимум поддерева этйо вершины
 };
 
-Node nodes[100000];
-int nodesNumber;
-
-int getRand() {
-  return (rand() << 15) + rand();
-}
-int getSz(int v) {return (v >= 0) ? nodes[v].sz : 0;}
-
-void recalculate(int v) {
-    nodes[v].sz = getSz(nodes[v].left) + 1 + getSz(nodes[v].right);
-    nodes[v].min = (nodes[v].left < 0) ? nodes[v].key : nodes[nodes[v].left].min;
-}
+Node nodes[1000000];
+int nodesNumber = 0;
 
 
 bool exists(int root, int x) {
@@ -39,25 +34,49 @@ bool exists(int root, int x) {
     return false;
 }
 
+int getSz(int v) {return (v >= 0) ? nodes[v].sz : 0;}
+
+int getRand() {
+  return (rand() << 15) + rand();
+}
+
 int makeNewNode(int x) {
-    nodes[nodesNumber++] = Node(x, getRand(), -1, -1, 1, x);
+    Node newNode;
+    newNode.key = x;
+    newNode.pr = getRand();
+    newNode.left = -1;
+    newNode.right = -1;
+    newNode.sz = 1;
+    newNode.min = x;
+    nodes[nodesNumber] = newNode;
     return nodesNumber++;
 }
+
+
+
+
+void recalculate(int v) {
+    nodes[v].sz = getSz(nodes[v].left) + 1 + getSz(nodes[v].right);
+    nodes[v].min = (nodes[v].left < 0) ? nodes[v].key : nodes[nodes[v].left].min;
+}
+
+
+
 
 pair<int, int> SPLIT(int root, int x) {
     if (root == -1) {
         return make_pair(-1, -1);
-    } if (nodes[root].key < x) {
+    } if (nodes[root].key <= x) {
         pair<int, int>p = SPLIT(nodes[root].right, x);
         nodes[root].right = p.first;
         recalculate(root);
         return make_pair(root, p.second);
     } else {
-        //Самостоятельное написание
-        pair<int, int>p = SPLIT(nodes[root].right , x);
-        nodes[root].right = p.first;
+        //Самостоятельное написание ++
+        pair<int, int>p = SPLIT(nodes[root].left , x);
+        nodes[root].left = p.second;
         recalculate(root);
-        return make_pair(root, p.second);
+        return make_pair(p.first, root);
     }
 }
 
@@ -74,7 +93,7 @@ int MERGE(int root1, int root2) {
         return root1;
     } else {
         //Самостоятельное написание ++
-        nodes[root2].left = MERGE(nodes[root2].left, root1);
+        nodes[root2].left = MERGE(root1, nodes[root2].left);
         recalculate(root2);
         return root2;
     }
@@ -90,6 +109,26 @@ int insert(int root, int x) {
 
 int erase(int root, int x) {
     pair<int, int> p = SPLIT(root, x);
-    pair<int, int> pp = MERGE(p.first, x-1);
-    return MERGE(p.first, p.second);
+    pair<int, int> pp = SPLIT(p.first, x-1);
+    return MERGE(pp.first, p.second);
+}
+
+
+int main(){
+  string s;
+  int x;
+  int root = -1;
+  while(cin >> s >> x) {
+    if (s == "insert"){
+      root = insert(root, x);
+    } else if (s == "delete"){
+      root = erase(root, x);
+    } else {
+      if (exists(root, x)) {
+        cout << "true" << "\n";
+      } else {
+        cout << "false" << "\n";
+      }
+    }
+  }
 }

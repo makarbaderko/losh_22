@@ -1,4 +1,5 @@
 //g4 dominoes
+//TODO: Get is isGood
 dp[i][mask];
 memset(dp, 0, sizeof(dp));
 for (int i = 0; i < m; i++){
@@ -15,11 +16,12 @@ for (int i = 0; i < m; i++){
 }
 //1 - клеточка занята, 0 - не занята (ДП по профилю)
 //mask - какие клеточки заняты в этом столбце, nmask - какие клеточки заняты в следующем столбце.
+
 bool areNeighbouring(int mask, int nmask, int n){
   if (mask&nmask){
     return false;
   } else{
-    return makeZeroesBeCoveredByVerticalDominoes(mask|nmask, n);
+    return isGood[mask|nmask];
   }
 }
 bool makeZeroesBeCoveredByVerticalDominoes(int mask, int n) {
@@ -33,3 +35,4 @@ bool makeZeroesBeCoveredByVerticalDominoes(int mask, int n) {
     } return true;
   }
 }
+//---------------------------------------------------------------------------------------------------------------------------------
