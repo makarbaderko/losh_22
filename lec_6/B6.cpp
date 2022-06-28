@@ -39,6 +39,11 @@ int buildNewNode(int value){
   return nodesNumber++;
 }
 
+
+struct Triple {
+  int left, middle, right;
+};
+
 int &left(int v){
   return nodes[v].left;
 }
@@ -94,57 +99,12 @@ void recalculate(int v) {
   sz(v) = getSz(left(v)) + 1 + getSz(right(v));
 }
 
-pair<int, int> splitBySize(int root, int szLeft) {
-  // Разбить дерево на 2 поддерева так,
-  //чтобы размер левого поддерева был рвен szLeft
-  if (szLeft == 0) {
-    return make_pair(-1, root);
-  } if (getSz(left(root)) >= szLeft){
-    push(root);
-    pair<int, int>p = splitBySize(left(root), szLeft);
-    left(root) = p.second();
-    recalculate(root);
-    return make_pair(p.first, root);
-  } else {
-    //Самостоятельное написание
-  }
-}
 
-struct Triple {
-  int left, middle, right;
-};
 
-Triple getSubsegment(int root, int l, int r) {
-  pair<int, int>p = splitBySize(root, l - 1);
-  pair<int, int>p2 =  splitBySize(p.second, r - l + 1);
-  Triple newTriple;
-  newTriple.left = p.first;
-  newTriple.middle = p2.first;
-  newTriple.right = p2.second;
-  return newTriple;
-}
 
-int mergeTriple(Triple t){
-  return merge(merge(t.left, t.middle), t.right);
-}
 
-int erase(int root, int pos) {
-  Triple t = getSubsegment(root, pos, pos);
-  return merge(t.left, t.right);
-}
 
-int getSumOnSubsegment(int &root, int l, int r){
-  Triple t = getSubsegment(root, l, r);
-  int ans = getSum(t.middle);
-  root = mergeTriple(t);
-  return ans;
-}
 
-int assign(int root, int pos, int x){
-  Triple t = getSubsegment(root, pos, pos);
-  t.middle = buildNewNode(x);
-  return mergeTriple(t);
-}
 //Перая задача - вызвать mergeTriple (поменять left и middle)
 
 void assignOnSubtree(int root, int x){
@@ -171,14 +131,6 @@ void reverseOnSubtree(int root) {
   }
   swap(left(root), right(root));
   isReversed(root) ^= 1;
-}
-
-
-
-void assignOnSubsegment(int root, int l, int r, int x) {
-  Triple t = getSubsegment(root, l, r);
-  assignOnSubtree(t.middle, x);
-  root = mergeTriple(t);
 }
 
 void push(int root){
@@ -211,12 +163,83 @@ int merge(int root1, int root2) {
     recalculate(root1);
     return root1;
   } else {
-    //Самостоятельное написание
+    //Самостоятельное написание ++
+    push(root1);
+    left(root2) = merge(root1, left(root2));
+    recalculate(root2);
+    return root2;
   }
 }
+
+
+pair<int, int> splitBySize(int root, int szLeft) {
+  // Разбить дерево на 2 поддерева так,
+  //чтобы размер левого поддерева был рвен szLeft
+  if (szLeft == 0) {
+    return make_pair(-1, root);
+  } if (getSz(left(root)) >= szLeft){
+    push(root);
+    pair<int, int>p = splitBySize(left(root), szLeft);
+    left(root) = p.second;
+    recalculate(root);
+    return make_pair(p.first, root);
+  } else {
+    //Самостоятельное написание ++
+    push(root);
+    pair<int, int>p = splitBySize(right(root), szLeft);
+    right(root) = p.first;
+    recalculate(root);
+    return make_pair(root, p.second);
+  }
+}
+
+
+Triple getSubsegment(int root, int l, int r) {
+  pair<int, int>p = splitBySize(root, l - 1);
+  pair<int, int>p2 =  splitBySize(p.second, r - l + 1);
+  Triple newTriple;
+  newTriple.left = p.first;
+  newTriple.middle = p2.first;
+  newTriple.right = p2.second;
+  return newTriple;
+}
+
+
+int mergeTriple(Triple t){
+  return merge(merge(t.left, t.middle), t.right);
+}
+
+int erase(int root, int pos) {
+  Triple t = getSubsegment(root, pos, pos);
+  return merge(t.left, t.right);
+}
+
+int getSumOnSubsegment(int &root, int l, int r){
+  Triple t = getSubsegment(root, l, r);
+  int ans = getSum(t.middle);
+  root = mergeTriple(t);
+  return ans;
+}
+
+int assign(int root, int pos, int x){
+  Triple t = getSubsegment(root, pos, pos);
+  t.middle = buildNewNode(x);
+  return mergeTriple(t);
+}
+
+void assignOnSubsegment(int root, int l, int r, int x) {
+  Triple t = getSubsegment(root, l, r);
+  assignOnSubtree(t.middle, x);
+  root = mergeTriple(t);
+}
+
 
 int insert(int root, int pos, int x){
     pair<int, int>p = splitBySize(root, pos - 1);
     int newV = buildNewNode(x);
     return merge(merge(p.first, newV), p.second);
+}
+
+int main(){
+  return 0;
 }
