@@ -9,6 +9,7 @@ struct Node {
   int value;
   int sum;
   int pr;
+  int min;
   int sz;
 };
 
@@ -17,6 +18,10 @@ int nodesNumber = 0;
 
 int getRand(){
   return (rand() << 15) + rand();
+}
+
+int getMin(int v){
+  return (v >= 0 ? nodes[v].min : 0);
 }
 
 struct Triple {
@@ -59,6 +64,7 @@ int getSz(int v){
 void recalculate(int v) {
   sum(v) = getSum(left(v)) + value(v) + getSum(right(v));
   sz(v) = getSz(left(v)) + 1 + getSz(right(v));
+  nodes[v].min = min(nodes[v].value, min(getMin(nodes[v].left), getMin(nodes[v].right)));
 }
 
 
@@ -72,6 +78,7 @@ int buildNewNode(int value){
   newNode.pr = getRand();
   newNode.sz = 1;
   newNode.sum = value;
+  newNode.min = value;
   nodes[nodesNumber] = newNode;
   return nodesNumber++;
 }
@@ -126,20 +133,32 @@ void showTree(int root){
   showTree(right(root));
 }
 
+int insert(int root, int pos, int x){
+    pair<int, int>p = splitBySize(root, pos);
+    int newV = buildNewNode(x);
+    return merge(merge(p.first, newV), p.second);
+}
+
 
 int main(){
-  int n, m;
+  int n, l, r;
+  int place, x;
   int root = -1;
-  cin >> n >> m;
-  for (int i = 0; i < n; i++) {
-    root = merge(root, buildNewNode(i));
-  } for (int i = 0; i < m; i++){
-    int l, r;
-    cin >> l >> r;
-    pair<int, int>p = splitBySize(root, l - 1);
-    pair<int, int>pp = splitBySize(p.second, r - l + 1);
-    root = merge(merge(pp.first, p.first), pp.second);
+  pair<int, int> p, pp;
+  cin >> n;
+  char req;
+  for (int i = 0; i < n; i++){
+    cin >> req;
+    if(req == '+'){
+      cin >> place >> x;
+      root = insert(root, place, x);
+    } else {
+      cin >> l >> r;
+      p = splitBySize(root, l - 1);
+      pp = splitBySize(p.second, r - l + 1);
+      cout << nodes[pp.first].min << endl;
+      root = merge(p.first, merge(pp.first, pp.second));
+    }
   }
-  showTree(root);
-  return 0;
 }
+

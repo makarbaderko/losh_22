@@ -1,0 +1,116 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+long long mod = 1000000009;
+long long mod1 = 1000000007;
+long long base = 29;
+
+vector<long long> bases;
+vector<long long> bases1;
+vector<long long> hashes_a;
+vector<long long> hashes_b;
+vector<long long> hashes_a1;
+vector<long long> hashes_b1;
+long long best_l;
+long long best_r;
+
+void precalculate_powers(long long n) {
+    bases.push_back(1);
+    for (long long i = 0; i < n; i++) {
+        bases.push_back((bases.back() * base) % mod);
+    }
+
+    bases1.push_back(1);
+    for (long long i = 0; i < n; i++) {
+        bases1.push_back((bases1.back() * base) % mod1);
+    }
+}
+
+void precalculate_hashes(string& a, string& b) {
+    long long n = a.size();
+    hashes_a.push_back(((a[0] - 'A')) % mod);
+    for (long long i = 1; i < n; i++) {
+        hashes_a.push_back((hashes_a.back() * base + (a[i] - 'A')) % mod);
+    }
+
+    hashes_b.push_back(((b[0] - 'A')) % mod);
+    for (long long i = 1; i < n; i++) {
+        hashes_b.push_back((hashes_b.back() * base + (b[i] - 'A')) % mod);
+    }
+
+    hashes_a1.push_back(((a[0] - 'A')) % mod1);
+    for (long long i = 1; i < n; i++) {
+        hashes_a1.push_back((hashes_a1.back() * base + (a[i] - 'A')) % mod1);
+    }
+
+    hashes_b1.push_back(((b[0] - 'A')) % mod1);
+    for (long long i = 1; i < n; i++) {
+        hashes_b1.push_back((hashes_b1.back() * base + (b[i] - 'A')) % mod1);
+    }
+}
+
+long long subtract(long long a, long long b, long long modulo) {
+    a -= b;
+    if (a < 0) {
+        a += modulo;
+    }
+    return a;
+}
+
+long long mul(long long a, long long b, long long modulo) {
+    return (a * 1ll * b) % modulo;
+}
+
+long long h(string& s, long long l, long long r, vector<long long>& s_hashes, long long modulo, vector<long long>& powers) {
+    if (l == 0) {
+        return s_hashes[r];
+    }
+    return subtract(s_hashes[r], mul(s_hashes[l - 1], powers[r - l + 1], modulo), modulo);
+}
+
+bool has_common(long long k, string& a, string& b) {
+    set<pair<long long, long long>> seen;
+    long long n = a.size();
+    for (long long i = 0; i < n - k + 1; i++) {
+        seen.insert(make_pair(h(a, i, i + k - 1, hashes_a, mod, bases), h(a, i, i + k - 1, hashes_a1, mod1, bases1)));
+    }
+
+    for (long long i = 0; i < n - k + 1; i++) {
+        if (seen.find(make_pair(h(b, i, i + k - 1, hashes_b, mod, bases), h(b, i, i + k - 1, hashes_b1, mod1, bases1))) != seen.end()) {
+            best_l = i;
+            best_r = i + k;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+int main() {
+    long long n;
+    cin >> n;
+    string a, b;
+    cin >> a >> b;
+
+    precalculate_powers(n);
+    precalculate_hashes(a, b);
+
+
+    long long l = 0;
+    long long r = n + 1;
+
+    while (r - l > 1) {
+        long long mid = (l + r) / 2;
+        if (has_common(mid, a, b)) {
+            l = mid;
+        } else {
+            r = mid;
+        }
+    }
+
+
+    for (long long i = best_l; i < best_r; i++) {
+        cout << b[i];
+    }
+    return 0;
+}
